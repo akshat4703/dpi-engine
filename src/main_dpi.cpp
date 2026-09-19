@@ -73,11 +73,22 @@ std::vector<std::string> split(const std::string& s) {
 }
 
 int main(int argc, char* argv[]) {
+    // Handle --help before the positional-argument check. The option loop below
+    // starts at argv[3], so a bare "--help" would otherwise never reach it and
+    // would exit 1 as a usage error.
+    for (int i = 1; i < argc; i++) {
+        std::string arg = argv[i];
+        if (arg == "--help" || arg == "-h") {
+            printUsage(argv[0]);
+            return 0;
+        }
+    }
+
     if (argc < 3) {
         printUsage(argv[0]);
         return 1;
     }
-    
+
     std::string input_file = argv[1];
     std::string output_file = argv[2];
     
