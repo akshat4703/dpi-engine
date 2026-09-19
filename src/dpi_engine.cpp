@@ -387,6 +387,18 @@ void DPIEngine::unblockDomain(const std::string& domain) {
     }
 }
 
+void DPIEngine::blockPort(uint16_t port) {
+    if (rule_manager_) {
+        rule_manager_->blockPort(port);
+    }
+}
+
+void DPIEngine::unblockPort(uint16_t port) {
+    if (rule_manager_) {
+        rule_manager_->unblockPort(port);
+    }
+}
+
 bool DPIEngine::loadRules(const std::string& filename) {
     if (rule_manager_) {
         return rule_manager_->loadRules(filename);

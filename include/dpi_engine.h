@@ -103,7 +103,13 @@ public:
     
     // Unblock a domain
     void unblockDomain(const std::string& domain);
-    
+
+    // Block a destination port
+    void blockPort(uint16_t port);
+
+    // Unblock a destination port
+    void unblockPort(uint16_t port);
+
     // Load rules from file
     bool loadRules(const std::string& filename);
     

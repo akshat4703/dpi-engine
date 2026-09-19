@@ -209,6 +209,7 @@ dpi_engine <input.pcap> <output.pcap> [options]
   --block-ip <ip>          Block packets from a source IP
   --block-app <app>        Block an application by name
   --block-domain <domain>  Block a domain (wildcards supported)
+  --block-port <port>      Block a destination port (1-65535)
   --rules <file>           Load rules from a file
   --lbs <n>                Load balancer threads (default 2)
   --fps <n>                Fast paths per load balancer (default 2)
@@ -216,8 +217,8 @@ dpi_engine <input.pcap> <output.pcap> [options]
   --help, -h               Usage
 ```
 
-Port blocking is supported by the engine, but only through a rules file — there
-is no `--block-port` flag.
+Each `--block-*` flag may be repeated. All four rule types are also settable
+from a [rules file](#rules-file).
 
 ### Recognised applications
 

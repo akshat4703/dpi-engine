@@ -2,6 +2,8 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <cstdint>
+#include <stdexcept>
 #include "dpi_engine.h"
 
 using namespace DPI;
@@ -23,6 +25,7 @@ Options:
   --block-ip <ip>        Block packets from source IP
   --block-app <app>      Block application (e.g., YouTube, Facebook)
   --block-domain <dom>   Block domain (supports wildcards: *.facebook.com)
+  --block-port <port>    Block destination port (1-65535)
   --rules <file>         Load blocking rules from file
   --lbs <n>              Number of load balancer threads (default: 2)
   --fps <n>              FP threads per LB (default: 2)
@@ -32,6 +35,7 @@ Examples:
   )" << program << R"( capture.pcap filtered.pcap
   )" << program << R"( capture.pcap filtered.pcap --block-app YouTube
   )" << program << R"( capture.pcap filtered.pcap --block-ip 192.168.1.50 --block-domain *.tiktok.com
+  )" << program << R"( capture.pcap filtered.pcap --block-port 8080
   )" << program << R"( capture.pcap filtered.pcap --rules blocking_rules.txt
 
 Supported Apps for Blocking:
@@ -100,6 +104,7 @@ int main(int argc, char* argv[]) {
     std::vector<std::string> block_ips;
     std::vector<std::string> block_apps;
     std::vector<std::string> block_domains;
+    std::vector<uint16_t> block_ports;
     std::string rules_file;
     
     for (int i = 3; i < argc; i++) {
@@ -111,6 +116,20 @@ int main(int argc, char* argv[]) {
             block_apps.push_back(argv[++i]);
         } else if (arg == "--block-domain" && i + 1 < argc) {
             block_domains.push_back(argv[++i]);
+        } else if (arg == "--block-port" && i + 1 < argc) {
+            const std::string value = argv[++i];
+            try {
+                size_t consumed = 0;
+                const int port = std::stoi(value, &consumed);
+                if (consumed != value.size() || port < 1 || port > 65535) {
+                    throw std::invalid_argument("out of range");
+                }
+                block_ports.push_back(static_cast<uint16_t>(port));
+            } catch (const std::exception&) {
+                std::cerr << "Invalid port '" << value
+                          << "' (expected an integer in 1-65535)\n";
+                return 1;
+            }
         } else if (arg == "--rules" && i + 1 < argc) {
             rules_file = argv[++i];
         } else if (arg == "--lbs" && i + 1 < argc) {
@@ -151,7 +170,11 @@ int main(int argc, char* argv[]) {
     for (const auto& domain : block_domains) {
         engine.blockDomain(domain);
     }
-    
+
+    for (uint16_t port : block_ports) {
+        engine.blockPort(port);
+    }
+
     // Process the file
     if (!engine.processFile(input_file, output_file)) {
         std::cerr << "Failed to process file\n";
